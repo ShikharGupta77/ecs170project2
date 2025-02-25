@@ -5,7 +5,6 @@ from connect4 import connect4
 import sys
 import numpy as np
 
-
 SQUARESIZE = 100
 BLUE = (0,0,255)
 BLACK = (0,0,0)
@@ -121,7 +120,7 @@ class stupidAI(connect4Player):
 
 class minimaxAI(connect4Player):
 	"""
-	Minimax beta AI to play connect 4
+	Minimax AI to play connect 4
 	"""
 	def play(self, env: connect4, move_dict: dict) -> None:
 		DEPTH = 4 
@@ -251,25 +250,28 @@ def make_move(board, topPositions, col, piece):
 	return new_board, new_top
 
 def get_winning_lines():
-    winning_lines = []
+	"""
+	All vertical, horizontal, diagonal sets of 4
+	""" 
+	winning_lines = []
+	
+	for r in range(ROW_COUNT):
+		for c in range(COLUMN_COUNT - 3):
+			winning_lines.append([(r, c+i) for i in range(4)])
 
-    for r in range(ROW_COUNT):
-        for c in range(COLUMN_COUNT - 3):
-            winning_lines.append([(r, c+i) for i in range(4)])
+	for c in range(COLUMN_COUNT):
+		for r in range(ROW_COUNT - 3):
+			winning_lines.append([(r+i, c) for i in range(4)])
 
-    for c in range(COLUMN_COUNT):
-        for r in range(ROW_COUNT - 3):
-            winning_lines.append([(r+i, c) for i in range(4)])
+	for r in range(ROW_COUNT - 3):
+		for c in range(COLUMN_COUNT - 3):
+			winning_lines.append([(r+i, c+i) for i in range(4)])
 
-    for r in range(ROW_COUNT - 3):
-        for c in range(COLUMN_COUNT - 3):
-            winning_lines.append([(r+i, c+i) for i in range(4)])
-
-    for r in range(3, ROW_COUNT):
-        for c in range(COLUMN_COUNT - 3):
-            winning_lines.append([(r-i, c+i) for i in range(4)])
+	for r in range(3, ROW_COUNT):
+		for c in range(COLUMN_COUNT - 3):
+			winning_lines.append([(r-i, c+i) for i in range(4)])
     
-    return winning_lines
+	return winning_lines
 
 WINNING_LINES = get_winning_lines()
 
@@ -285,14 +287,14 @@ def winning_move(board, piece):
 
 def is_terminal_node(board, topPositions):
     """
-	Return True if the board is in a terminal state (win for either or no valid moves).
+	Return True if the board is in a terminal state (win for either or no valid moves)
 	"""
     return (winning_move(board, 1) or winning_move(board, 2) or 
             len(get_valid_locations(topPositions)) == 0)
 
 def score_position(board, piece):
     """
-    Evaluation function for connect 4 (explained further in comments)
+    Evaluation function for connect 4 (explained further in comments + report)
     """
     opponent = 1 if piece == 2 else 2
     score = 0
@@ -326,8 +328,7 @@ def score_position(board, piece):
 
 def evaluate_line(line, piece, opponent):
     """
-    Evaluates a single line (4 consecutive positions) for strategic value.
-    Uses a pattern recognition approach with pre-calculated values.
+    Gives points based on how many pieces there are and their positions relative to each other
     """
 	# Count pieces
     piece_count = line.count(piece)
@@ -358,9 +359,8 @@ def evaluate_line(line, piece, opponent):
     
     # Same thing but remove points for opponents pieces
     if opp_count == 3 and empty_count == 1:
-        return -80  # Critical threat
+        return -80 
     elif opp_count == 2 and empty_count == 2:
-        # Check if the two opponent pieces are connected
         if line[0] == opponent and line[1] == opponent:
             return -8
         elif line[1] == opponent and line[2] == opponent:
